@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PPC REMAN 2026 - Interactive Learning & Simulation Game</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#0f172a',
+            },
+            reman: {
+              accent: '#f59e0b',
+              success: '#10b981',
+              danger: '#ef4444',
+              purple: '#8b5cf6'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .glass-card-hover:hover { background: rgba(30, 41, 59, 0.9); border-color: rgba(59, 130, 246, 0.5); transform: translateY(-2px); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.4); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between custom-scrollbar">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-50 glass-card border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/30">
+          ⚙️
+        </div>
+        <div>
+          <h1 class="text-lg font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">PPC REMAN 2026</h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Simulasi & Game Interaktif Production Planning & Control</p>
+        </div>
+      </div>
+
+      <!-- Stats Bar & Controls -->
+      <div class="flex items-center gap-3">
+        <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2 text-xs sm:text-sm">
+          <i class="fa-solid fa-trophy text-amber-400"></i>
+          <span class="text-slate-400">Skor:</span>
+          <span id="global-score" class="font-bold text-amber-400">0</span>
+        </div>
+        <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2 text-xs sm:text-sm">
+          <i class="fa-solid fa-fire text-orange-500"></i>
+          <span class="text-slate-400 hidden sm:inline">Streak:</span>
+          <span id="global-streak" class="font-bold text-orange-400">0</span>
+        </div>
+        <button id="sound-btn" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition">
+          <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN NAVIGATION TABS -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+    <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-3">
+      <button onclick="switchTab('sim')" id="tab-btn-sim" class="tab-btn active px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition bg-blue-600 text-white shadow-lg shadow-blue-600/30">
+        <i class="fa-solid fa-industry"></i> 🏭 Simulasi Pabrik Reman
+      </button>
+      <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-circle-question"></i> 🎯 Kuis Arena PPC
+      </button>
+      <button onclick="switchTab('sorter')" id="tab-btn-sorter" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-recycle"></i> 🧩 Game 7 Waste & 3M
+      </button>
+      <button onclick="switchTab('calc')" id="tab-btn-calc" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-calculator"></i> 🧮 Challenge Hitung VA & Utilisasi
+      </button>
+      <button onclick="switchTab('guide')" id="tab-btn-guide" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white">
+        <i class="fa-solid fa-book-open"></i> 📖 Rangkuman Materi
+      </button>
+    </div>
+
+    <!-- ==================== 1. SIMULASI PABRIK REMAN ==================== -->
+    <section id="tab-sim" class="tab-content space-y-6">
+      <div class="glass-card p-6 rounded-2xl border border-slate-700/60 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <span class="inline-block px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">PPC Decision Simulator</span>
+            <h2 class="text-2xl font-bold text-white">Simulasi Kasus Operational PPC Remanufacturing</h2>
+            <p class="text-slate-400 text-sm mt-1">Selesaikan kasus nyata di pabrik Cikarang Reman. Ambil keputusan PPC yang tepat untuk meningkatkan output & efisiensi!</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Progres Kasus:</span>
+            <span id="sim-progress-text" class="text-sm font-bold text-blue-400">1 / 5</span>
+          </div>
+        </div>
+
+        <!-- Scenario Display -->
+        <div id="sim-scenario-card" class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 space-y-4">
+          <!-- Scenario dynamic content injected via JS -->
+        </div>
+
+        <!-- Action Choices -->
+        <div id="sim-options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <!-- Options injected via JS -->
+        </div>
+
+        <!-- Feedback Result Area -->
+        <div id="sim-feedback" class="hidden mt-6 p-5 rounded-xl border transition-all">
+          <div class="flex items-start gap-4">
+            <div id="sim-feedback-icon" class="text-2xl pt-1"></div>
+            <div class="flex-grow space-y-2">
+              <h4 id="sim-feedback-title" class="font-bold text-lg"></h4>
+              <p id="sim-feedback-body" class="text-sm text-slate-300 leading-relaxed"></p>
+              <div id="sim-feedback-metrics" class="flex flex-wrap gap-3 pt-2"></div>
+              <button onclick="nextSimScenario()" class="mt-4 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg text-sm transition flex items-center gap-2">
+                Lanjut Kasus Berikutnya <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 2. KUIS ARENA PPC ==================== -->
+    <section id="tab-quiz" class="tab-content hidden space-y-6">
+      <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+          <div>
+            <span class="inline-block px-3 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">Mastery Quiz</span>
+            <h2 class="text-2xl font-bold text-white">Uji Pemahaman Materi GDP REMAN 2026</h2>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <div class="text-xs text-slate-400">Pertanyaan</div>
+              <div id="quiz-counter" class="text-sm font-bold text-purple-400">1 / 10</div>
+            </div>
+            <div class="w-24 bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+              <div id="quiz-progress-bar" class="bg-purple-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="quiz-box">
+          <div id="quiz-question-text" class="text-lg font-semibold text-white mb-6 leading-relaxed">
+            <!-- Question text -->
+          </div>
+
+          <div id="quiz-answers-container" class="space-y-3">
+            <!-- Answer buttons injected via JS -->
+          </div>
+
+          <div id="quiz-explanation" class="hidden mt-6 p-4 rounded-xl bg-slate-900 border border-slate-800 text-sm space-y-2">
+            <div class="font-bold flex items-center gap-2 text-slate-200">
+              <i class="fa-solid fa-lightbulb text-amber-400"></i> Pembahasan Lengkap:
+            </div>
+            <p id="quiz-explanation-text" class="text-slate-300 leading-relaxed"></p>
+            <button onclick="nextQuizQuestion()" class="mt-3 px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg text-sm transition">
+              Pertanyaan Selanjutnya <i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quiz Completion View -->
+        <div id="quiz-result-view" class="hidden text-center py-12 space-y-4">
+          <div class="w-20 h-20 mx-auto rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-3xl mb-2">
+            🏆
+          </div>
+          <h3 class="text-2xl font-bold text-white">Kuis Selesai!</h3>
+          <p id="quiz-final-score-text" class="text-lg text-slate-300"></p>
+          <div id="quiz-badge-award" class="inline-block px-4 py-2 bg-slate-800 rounded-xl border border-slate-700 text-amber-400 font-semibold text-sm"></div>
+          <div class="pt-4">
+            <button onclick="restartQuiz()" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition shadow-lg shadow-purple-600/30">
+              <i class="fa-solid fa-rotate-right mr-2"></i> Coba Kuis Lagi
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. GAME 7 WASTE & 3M ==================== -->
+    <section id="tab-sorter" class="tab-content hidden space-y-6">
+      <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+        <div class="mb-6">
+          <span class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">Lean Classification Challenge</span>
+          <h2 class="text-2xl font-bold text-white">Klasifikasi 7 Waste & 3M di Lapangan</h2>
+          <p class="text-slate-400 text-sm mt-1">Baca situasi kejadian di area produksi Reman, lalu pilih jenis Pemborosan (Waste) atau Kategori 3M yang tepat!</p>
+        </div>
+
+        <div id="sorter-card" class="bg-slate-900 rounded-2xl p-6 border border-slate-800 text-center space-y-4">
+          <div class="text-xs font-semibold uppercase text-slate-500 tracking-wider" id="sorter-category-title">Identifikasi Pemborosan</div>
+          <div id="sorter-item-text" class="text-xl font-bold text-amber-300 min-h-[60px] flex items-center justify-center px-4">
+            "Operator bolak-balik mengambil kunci pas yang disimpan di rak jauh dari workstation."
+          </div>
+          
+          <div class="pt-4 border-t border-slate-800">
+            <div class="text-xs text-slate-400 mb-3">Pilih kategori yang paling sesuai:</div>
+            <div id="sorter-buttons-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <!-- Category buttons injected dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <div id="sorter-feedback" class="hidden p-4 rounded-xl text-center text-sm font-medium transition"></div>
+
+        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex items-center justify-between text-sm">
+          <span class="text-slate-400">Skor Game Waste: <strong id="sorter-score" class="text-amber-400">0</strong> / 10</span>
+          <button onclick="resetSorterGame()" class="text-xs text-slate-400 hover:text-white underline">Reset Game</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. KALKULATOR & CHALLENGE HITUNG ==================== -->
+    <section id="tab-calc" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Live Calculator Tool -->
+        <div class="glass-card p-6 rounded-2xl border border-slate-700/60 space-y-4">
+          <div>
+            <span class="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-semibold uppercase tracking-wider mb-1">Interactive Tool</span>
+            <h3 class="text-xl font-bold text-white">Kalkulator VA Ratio & Utilisasi</h3>
+            <p class="text-xs text-slate-400">Hitung rasio Value Added dan Tingkat Utilisasi Kapasitas secara instan.</p>
+          </div>
+
+          <!-- VA Calculator Inputs -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+            <h4 class="text-sm font-bold text-emerald-400 border-b border-slate-800 pb-2">1. Hitung VA Ratio (%)</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Value Added (Menit)</label>
+                <input type="number" id="calc-va-in" value="70" oninput="calculateVARatio()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Non-Value Added (Menit)</label>
+                <input type="number" id="calc-nva-in" value="50" oninput="calculateVARatio()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+              </div>
+            </div>
+            <div class="bg-slate-800/90 p-3 rounded-lg flex justify-between items-center text-sm">
+              <span class="text-slate-300">Total Durasi: <strong id="calc-total-time" class="text-white">120 menit</strong></span>
+              <span class="text-slate-300">VA Ratio: <strong id="calc-va-ratio-out" class="text-emerald-400 font-bold text-base">58.3%</strong></span>
+            </div>
+          </div>
+
+          <!-- Capacity Utilization Calc -->
+          <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+            <h4 class="text-sm font-bold text-blue-400 border-b border-slate-800 pb-2">2. Hitung Utilisasi Kapasitas (%)</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Output Aktual (Unit)</label>
+                <input type="number" id="calc-act-out" value="850" oninput="calculateUtilization()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Kapasitas Maksimum (Unit)</label>
+                <input type="number" id="calc-cap-max" value="1000" oninput="calculateUtilization()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+              </div>
+            </div>
+            <div class="bg-slate-800/90 p-3 rounded-lg flex justify-between items-center text-sm">
+              <span class="text-slate-300">Status Utilisasi: <strong id="calc-util-status" class="text-blue-400">Efisien & Fleksibel</strong></span>
+              <span class="text-slate-300">Hasil: <strong id="calc-util-out" class="text-blue-400 font-bold text-base">85.0%</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice Math Challenge -->
+        <div class="glass-card p-6 rounded-2xl border border-slate-700/60 flex flex-col justify-between">
+          <div>
+            <span class="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-semibold uppercase tracking-wider mb-1">Speed Math Challenge</span>
+            <h3 class="text-xl font-bold text-white mb-2">Tantangan Hitung Cepat PPC</h3>
+            <p class="text-xs text-slate-400 mb-4">Selesaikan perhitungan cepat berdasarkan rumus resmi materi GDP REMAN 2026.</p>
+
+            <div id="math-challenge-box" class="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-4">
+              <div id="math-question-title" class="text-sm font-semibold text-amber-300">
+                <!-- Injected via JS -->
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="number" step="0.1" id="math-answer-input" placeholder="Masukkan angka..." class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 flex-grow">
+                <button onclick="checkMathAnswer()" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm rounded-lg transition">
+                  Jawab
+                </button>
+              </div>
+              <div id="math-feedback" class="hidden text-xs p-3 rounded-lg"></div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 space-y-1">
+            <p><strong>💡 Rumus Penting:</strong></p>
+            <p>• VA Ratio = (Waktu VA ÷ Total Waktu) × 100%</p>
+            <p>• Utilisasi = (Output Aktual ÷ Kapasitas Maksimum) × 100%</p>
+            <p>• COGM = Bahan Baku + TKL + Overhead ÷ Perubahan WIP</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 5. RANGKUMAN MATERI ==================== -->
+    <section id="tab-guide" class="tab-content hidden space-y-6">
+      <div class="glass-card p-6 rounded-2xl border border-slate-700/60">
+        <h2 class="text-2xl font-bold text-white mb-4">Ringkasan Eksekutif GDP REMAN 2026</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-blue-400 uppercase">1. Reman vs Manufaktur</div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Manufaktur menggunakan bahan baru. Remanufacturing memanfaatkan kembali <strong>Core</strong> bekas menjadi produk standar seperti baru melalui:
+              <br><span class="text-amber-400 font-semibold">Core ➔ Inspeksi ➔ Disassembly ➔ Refurbish ➔ Assembly ➔ Test ➔ Produk Reman</span>.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-purple-400 uppercase">2. Timeframe PPC</div>
+            <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+              <li><strong>Bulanan:</strong> Tren pesanan, perencanaan kapasitas, pengadaan mesin.</li>
+              <li><strong>Mingguan:</strong> Jadwal Induk Produksi (MPS), Material Requirement Planning (MRP).</li>
+              <li><strong>Harian:</strong> Pembagian kerja (dispatch), kontrol shop floor, penanganan gangguan.</li>
+            </ul>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-emerald-400 uppercase">3. Biaya & Kapasitas</div>
+            <p class="text-xs text-slate-300">
+              • <strong>Fixed Cost:</strong> Biaya tetap (Sewa, Gaji Tetap, Depresiasi).<br>
+              • <strong>Variable Cost:</strong> Mengikuti volume (Bahan baku, Energi).<br>
+              • <strong>Utilisasi:</strong> &lt;70% (Belum optimal), 80-90% (Efisien/Fleksibel), &gt;95% (Risiko Overload).
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-amber-400 uppercase">4. 7 Waste (Pemborosan)</div>
+            <p class="text-xs text-slate-300">
+              Transportation, Inventory, Motion, Waiting, Overprocessing, Overproduction, Defect.
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-red-400 uppercase">5. Konsep 3M</div>
+            <p class="text-xs text-slate-300">
+              • <strong>Muda:</strong> Pemborosan/aktivitas NVA.<br>
+              • <strong>Mura:</strong> Ketidakmerataan aliran kerja.<br>
+              • <strong>Muri:</strong> Beban kerja berlebih (Overburden).
+            </p>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-cyan-400 uppercase">6. ECRS & Flow</div>
+            <p class="text-xs text-slate-300">
+              <strong>Eliminate</strong> ➔ <strong>Combine</strong> ➔ <strong>Rearrange</strong> ➔ <strong>Simplify</strong>.<br>
+              Kapasitas aliran produksi selalu ditentukan oleh proses <strong>Bottleneck</strong>!
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 py-4 bg-slate-950 text-center text-xs text-slate-500">
+    GDP PPC REMAN 2026 • Interactive Educational Tool • Production Planning & Control Cikarang Plant
+  </footer>
+
+  <!-- JS LOGIC CODE -->
+  <script>
+    // Global States
+    let globalScore = 0;
+    let globalStreak = 0;
+    let soundEnabled = true;
+
+    // Web Audio Synthesizer for sound effects
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'correct') {
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+          osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.25);
+        } else if (type === 'wrong') {
+          osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+          osc.frequency.exponentialRampToValueAtTime(146.83, audioCtx.currentTime + 0.2); // D3
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'click') {
+          osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.05);
+        }
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-icon').className = soundEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+    }
+
+    function updateStats(points = 0, success = true) {
+      if (points > 0) {
+        globalScore += points;
+        if (success) globalStreak += 1; else globalStreak = 0;
+      } else if (!success) {
+        globalStreak = 0;
+      }
+      document.getElementById('global-score').textContent = globalScore;
+      document.getElementById('global-streak').textContent = globalStreak;
+    }
+
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      playSound('click');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-600/30');
+        btn.classList.add('bg-slate-800', 'text-slate-400');
+      });
+
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
+      activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-600/30');
+    }
+
+    /* ==================== 1. SIMULASI PABRIK LOGIC ==================== */
+    const simScenarios = [
+      {
+        title: "Kasus 1: Penumpukan Work-In-Progress (WIP) di Line Disassembly",
+        desc: "Pada shift pagi di area Reman, Process A (Inspeksi Core) menghasilkan 10 unit/jam, Process B (Disassembly) hanya mampu 4 unit/jam, sedangkan Process C (Refurbish) berkapasitas 12 unit/jam. WIP menumpuk parah di depan Process B.",
+        question: "Sebagai PPC Controller, tindakan pertama apa yang paling tepat untuk memperbaiki aliran?",
+        options: [
+          { text: "Mempercepat Process A agar menghasilkan lebih banyak output", correct: false, reason: "Mempercepat Process A justru memperparah penumpukan WIP di Process B (Bottleneck)." },
+          { text: "Mengidentifikasi Process B sebagai Bottleneck dan melakukan line balancing / penambahan kapasitas di Process B", correct: true, reason: "Tepat! Kapasitas aliran produksi ditentukan oleh proses Bottleneck (Process B). Menyeimbangkan kapasitas Process B akan mengalirkan WIP secara lancar." },
+          { text: "Membeli mesin baru untuk Process C", correct: false, reason: "Process C sudah memiliki kapasitas tinggi (12 unit/jam) dan sedang mengalami kelaparan material (starving)." },
+          { text: "Membiarkan penumpukan karena WIP adalah aset persediaan perusahaan", correct: false, reason: "WIP tinggi adalah salah satu bentuk Inventory Waste yang memanjangkan Lead Time." }
+        ]
+      },
+      {
+        title: "Kasus 2: Parts Readiness & Keterlambatan Komponen",
+        desc: "Jadwal perakitan (Assembly) tinggal 2 hari lagi, namun suku cadang seal kit belum tiba dari supplier. Tim produksi panik dan melakukan follow-up berulang kali secara manual.",
+        question: "Langkah transformasi proaktif (TO-BE) apa yang harus diterapkan PPC agar kejadian ini tidak terulang?",
+        options: [
+          { text: "Menerapkan 5 Kontrol Inti Parts Readiness dengan Single Status Source (ERP) dan penetapan Owner untuk item At Risk", correct: true, reason: "Sangat Tepat! Pendekatan TO-BE proaktif mengandalkan verifikasi lead time standar, single source dashboard, dan eskalasi berjenjang sebelum produksi terganggu." },
+          { text: "Menunggu hingga hari produksi lalu menghentikan lini assembly", correct: false, reason: "Ini adalah gaya Reaktif (AS-IS) yang menimbulkan Production Waiting Waste." },
+          { text: "Menyimpan stok seal kit 10 kali lipat di gudang tanpa perhitungan", correct: false, reason: "Ini menciptakan Over-inventory Waste yang meningkatkan biaya penyimpanan." },
+          { text: "Menyalahkan tim Procurement secara verbal", correct: false, reason: "PPC memerlukan sistem sistematis (SIPOC & Control Dashboard), bukan aksi reaktif." }
+        ]
+      },
+      {
+        title: "Kasus 3: Analisis Akar Masalah (RCA) Mesin Overheating",
+        desc: "Mesin penguji hydraulic test bench tiba-tiba berhenti akibat overheating. Tim mekanik langsung mengganti cairan pendingin dan menyalakan mesin kembali, namun 2 jam kemudian mesin mati lagi.",
+        question: "Metode RCA apa yang seharusnya diterapkan agar masalah ini tuntas sampai akar?",
+        options: [
+          { text: "Langsung mengganti seluruh komponen mesin baru", correct: false, reason: "Investasi berlebih tanpa memahami akar masalah riil." },
+          { text: "Menggunakan metode 5 Why untuk menggali hingga menemukan masalah pada disiplin Preventive Maintenance", correct: true, reason: "Tepat! Menggali hingga 'Why 4/5' mengungkap bahwa filter tersumbat akibat belum adanya jadwal & disiplin preventive maintenance yang konsisten." },
+          { text: "Menambah kipas angin di luar mesin", correct: false, reason: "Hanya mengatasi gejala permukaan (symptom), bukan akar masalah." },
+          { text: "Mengurangi jam kerja mesin menjadi setengahnya", correct: false, reason: "Mengorbankan kapasitas produksi tanpa menyelesaikan kendala teknis." }
+        ]
+      },
+      {
+        title: "Kasus 4: Tingkat Utilisasi & Beban Overload",
+        desc: "Target produksi meningkat drastis. Mesin utama dijalankan tanpa henti hingga mencapai tingkat utilisasi 98% selama sebulan penuh.",
+        question: "Berdasarkan standar PPC Reman, bagaimana Anda menilai tingkat utilisasi 98% ini?",
+        options: [
+          { text: "Sangat bagus karena mendekati 100%", correct: false, reason: "Utilisasi >95% memiliki risiko overload, kerusakan mesin mendadak, dan ketidakfleksibelan." },
+          { text: "Berisiko tinggi overload & kerusakan. Tingkat ideal efisien & fleksibel adalah 80%–90%", correct: true, reason: "Benar! Utilisasi ideal beroperasi di rentang 80%–90% untuk memberikan ruang fleksibilitas dan perawatan rutin mesin." },
+          { text: "Terlalu rendah, seharusnya 100%", correct: false, reason: "Menjalankan mesin 100% melanggar prinsip Heijunka dan memicu breakdown." },
+          { text: "Tidak berpengaruh pada biaya produksi", correct: false, reason: "Kerusakan mesin mendadak akan melonjakkan Maintenance Cost & Rework Cost." }
+        ]
+      },
+      {
+        title: "Kasus 5: Eliminasi Non-Value Added (NVA) Waktu Tunggu",
+        desc: "Total waktu pengerjaan MTC Non-Tech adalah 120 menit. Setelah dianalisis: Proses utama (40m), Verifikasi (20m), Dokumentasi (10m). Sedangkan waktu menunggu approval (25m), perpindahan (15m), dan rework (10m).",
+        question: "Berapa VA Ratio dari proses ini dan apa tindakan ECRS terbaiknya?",
+        options: [
+          { text: "VA Ratio 58.3%. Kurangi waktu tunggu approval & perpindahan melalui ECRS", correct: true, reason: "Sempurna! VA = 70m, NVA = 50m (Total 120m). VA Ratio = 70/120 = 58.3%. Fokus perbaikan pada pengurangan waste NVA 50m." },
+          { text: "VA Ratio 100%. Tidak ada pemborosan", correct: false, reason: "Perpindahan dan waktu tunggu approval adalah pemborosan (NVA)." },
+          { text: "VA Ratio 41.7%. Menambah waktu verifikasi", correct: false, reason: "41.7% adalah NVA Ratio, bukan VA Ratio." },
+          { text: "Memotong waktu proses pengerjaan utama menjadi 10 menit", correct: false, reason: "Memotong pengerjaan utama dapat merusak kualitas produk (Value Added)." }
+        ]
+      }
+    ];
+
+    let currentSimIdx = 0;
+
+    function renderSimScenario() {
+      const scenario = simScenarios[currentSimIdx];
+      document.getElementById('sim-progress-text').textContent = `${currentSimIdx + 1} / ${simScenarios.length}`;
+      
+      document.getElementById('sim-scenario-card').innerHTML = `
+        <h3 class="text-lg font-bold text-amber-300">${scenario.title}</h3>
+        <p class="text-sm text-slate-300 leading-relaxed">${scenario.desc}</p>
+        <div class="p-3 bg-slate-800/90 rounded-lg border border-slate-700 text-xs font-semibold text-blue-300 flex items-center gap-2">
+          <i class="fa-solid fa-circle-question text-amber-400"></i> ${scenario.question}
+        </div>
+      `;
+
+      const optionsContainer = document.getElementById('sim-options-container');
+      optionsContainer.innerHTML = '';
+      document.getElementById('sim-feedback').classList.add('hidden');
+
+      scenario.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "p-4 bg-slate-800/80 hover:bg-slate-700/90 border border-slate-700 hover:border-blue-500 rounded-xl text-left text-sm text-slate-200 transition space-y-1 flex items-start gap-3 glass-card-hover";
+        btn.onclick = () => selectSimOption(opt);
+        btn.innerHTML = `
+          <span class="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-blue-400 flex-shrink-0 mt-0.5">${String.fromCharCode(65 + idx)}</span>
+          <span>${opt.text}</span>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectSimOption(option) {
+      const feedbackEl = document.getElementById('sim-feedback');
+      const titleEl = document.getElementById('sim-feedback-title');
+      const bodyEl = document.getElementById('sim-feedback-body');
+      const iconEl = document.getElementById('sim-feedback-icon');
+
+      feedbackEl.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-700', 'bg-red-950/80', 'border-red-700');
+
+      if (option.correct) {
+        playSound('correct');
+        updateStats(100, true);
+        feedbackEl.classList.add('bg-emerald-950/80', 'border-emerald-700');
+        iconEl.innerHTML = '✅';
+        titleEl.textContent = "Keputusan Tepat! (+100 Poin)";
+        titleEl.className = "font-bold text-lg text-emerald-400";
+      } else {
+        playSound('wrong');
+        updateStats(0, false);
+        feedbackEl.classList.add('bg-red-950/80', 'border-red-700');
+        iconEl.innerHTML = '❌';
+        titleEl.textContent = "Kurang Tepat!";
+        titleEl.className = "font-bold text-lg text-red-400";
+      }
+
+      bodyEl.textContent = option.reason;
+    }
+
+    function nextSimScenario() {
+      playSound('click');
+      currentSimIdx = (currentSimIdx + 1) % simScenarios.length;
+      renderSimScenario();
+    }
+
+    /* ==================== 2. KUIS ARENA LOGIC ==================== */
+    const quizQuestions = [
+      {
+        q: "Apa perbedaan utama antara produksi Manufaktur biasa dan Remanufacturing (Reman)?",
+        options: [
+          "Manufaktur menggunakan material baru, sedangkan Reman memroses kembali Core/komponen bekas menjadi seperti baru.",
+          "Remanufacturing tidak memerlukan proses pengujian standar.",
+          "Manufaktur hanya membuat produk elektronik, sedangkan Reman hanya untuk otomotif.",
+          "Remanufacturing selalu menghasilkan kualitas produk di bawah produk baru."
+        ],
+        answer: 0,
+        exp: "Produksi manufaktur menggunakan bahan baku baru sebagai input utama, sedangkan Remanufacturing mengembalikan produk bekas (Core) menjadi seperti baru melalui inspeksi, disassembly, refurbish, assembly, dan pengujian standar."
+      },
+      {
+        q: "Manakah urutan tahapan proses utama dalam Remanufacturing yang benar?",
+        options: [
+          "Assembly ➔ Core ➔ Refurbish ➔ Inspeksi ➔ Test",
+          "Core ➔ Inspeksi ➔ Disassembly ➔ Refurbish ➔ Assembly ➔ Test",
+          "Disassembly ➔ Assembly ➔ Core ➔ Test ➔ Inspeksi",
+          "Core ➔ Refurbish ➔ Test ➔ Assembly ➔ Disassembly"
+        ],
+        answer: 1,
+        exp: "Alur standar Remanufacturing dimotori oleh penanganan Core ➔ Inspeksi awal ➔ Disassembly (pembongkaran) ➔ Refurbish ➔ Assembly (perakitan) ➔ Test (pengujian)."
+      },
+      {
+        q: "Dalam timeframe PPC, kegiatan seperti Menetapkan Jadwal Induk Produksi (MPS) dan Perencanaan Kebutuhan Bahan (MRP) dilakukan pada periode...",
+        options: ["Harian", "Mingguan", "Bulanan", "Tahunan"],
+        answer: 1,
+        exp: "PPC Mingguan berfokus pada penetapan rencana detail mingguan: Jadwal Induk Produksi (MPS) dan Perencanaan Kebutuhan Bahan (MRP)."
+      },
+      {
+        q: "Rumus untuk menghitung Tingkat Utilisasi Kapasitas adalah...",
+        options: [
+          "(Kapasitas Maksimum ÷ Output Aktual) × 100%",
+          "(Output Aktual ÷ Kapasitas Maksimum) × 100%",
+          "(Total Biaya ÷ Total Output) × 100%",
+          "(Waktu Tunggu ÷ Total Jam Kerja) × 100%"
+        ],
+        answer: 1,
+        exp: "Utilisasi (%) = (Output Aktual ÷ Kapasitas) × 100%. Contoh: 850 unit ÷ 1.000 unit = 85%."
+      },
+      {
+        q: "Manakah di bawah ini yang termasuk dalam kategori Fixed Cost (Biaya Tetap) di area PPC?",
+        options: [
+          "Bahan baku komponen utama",
+          "Energi/listrik produksi harian",
+          "Sewa mesin, Gaji Tetap, dan Depresiasi Mesin",
+          "Biaya lembur operator saat lonjakan order"
+        ],
+        answer: 2,
+        exp: "Fixed Cost adalah biaya yang nilainya tetap tidak terpengaruh oleh volume produksi, seperti sewa mesin, gaji tetap karyawan, dan depresiasi."
+      },
+      {
+        q: "Di dalam Lean Manufacturing, ketidakmerataan aliran kerja atau fluktuasi permintaan disebut...",
+        options: ["Muda", "Mura", "Muri", "Kaizen"],
+        answer: 1,
+        exp: "Mura adalah ketidakmerataan beban/aliran kerja. Muri adalah beban kerja berlebih (overburden). Muda adalah aktivitas pemborosan (waste)."
+      },
+      {
+        q: "Prinsip ECRS dalam perbaikan proses merupakan singkatan dari...",
+        options: [
+          "Evaluate, Calculate, Reduce, Standardize",
+          "Eliminate, Combine, Rearrange, Simplify",
+          "Estimate, Control, Review, Sustain",
+          "Examine, Cut, Recycle, Solve"
+        ],
+        answer: 1,
+        exp: "ECRS singkatan dari Eliminate (Hilangkan langkah tidak perlu), Combine (Gabungkan), Rearrange (Atur ulang urutan), dan Simplify (Sederhanakan)."
+      },
+      {
+        q: "Apa dampak langsung dari proses Bottleneck pada lini produksi?",
+        options: [
+          "Menentukan kapasitas total aliran produksi seluruh sistem",
+          "Mempercepat seluruh proses tanpa batas",
+          "Menghilangkan semua bentuk pemborosan",
+          "Menurunkan kualitas produk akhir"
+        ],
+        answer: 0,
+        exp: "Kapasitas aliran produksi selalu ditentukan oleh proses Bottleneck (proses dengan kapasitas paling lambat/rendah)."
+      },
+      {
+        q: "Dalam SIPOC Parts Readiness Management, indikator kinerja utama untuk mengukur persentase ketepatan waktu pengiriman dari supplier adalah...",
+        options: ["Supplier OTIF %", "GR Processing Time", "BOM Accuracy", "RFU Achievement %"],
+        answer: 0,
+        exp: "Supplier OTIF % (On-Time In-Full) mengukur performa pengiriman dari supplier sesuai jadwal dan kuantitas."
+      },
+      {
+        q: "Sebuah aktivitas MTC membutuhkan waktu VA = 70 menit dan NVA = 50 menit. Berapakah VA Ratio-nya?",
+        options: ["41.7%", "50.0%", "58.3%", "70.0%"],
+        answer: 2,
+        exp: "Total Waktu = 70 + 50 = 120 menit. VA Ratio = (70 ÷ 120) × 100% = 58.3%."
+      }
+    ];
+
+    let currentQuizIdx = 0;
+    let quizScore = 0;
+
+    function renderQuizQuestion() {
+      const qData = quizQuestions[currentQuizIdx];
+      document.getElementById('quiz-counter').textContent = `${currentQuizIdx + 1} / ${quizQuestions.length}`;
+      document.getElementById('quiz-progress-bar').style.width = `${((currentQuizIdx + 1) / quizQuestions.length) * 100}%`;
+      
+      document.getElementById('quiz-question-text').textContent = `${currentQuizIdx + 1}. ${qData.q}`;
+      document.getElementById('quiz-explanation').classList.add('hidden');
+
+      const container = document.getElementById('quiz-answers-container');
+      container.innerHTML = '';
+
+      qData.options.forEach((optText, i) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full p-3.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-left text-sm text-slate-200 transition flex items-center justify-between group";
+        btn.onclick = () => answerQuiz(i);
+        btn.innerHTML = `
+          <span>${optText}</span>
+          <i class="fa-regular fa-circle text-slate-500 group-hover:text-purple-400"></i>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function answerQuiz(selectedIdx) {
+      const qData = quizQuestions[currentQuizIdx];
+      const buttons = document.getElementById('quiz-answers-container').children;
+
+      for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
+        if (i === qData.answer) {
+          buttons[i].className = "w-full p-3.5 bg-emerald-950/80 border border-emerald-500 rounded-xl text-left text-sm text-emerald-300 font-medium flex items-center justify-between";
+        } else if (i === selectedIdx) {
+          buttons[i].className = "w-full p-3.5 bg-red-950/80 border border-red-500 rounded-xl text-left text-sm text-red-300 flex items-center justify-between";
+        }
+      }
+
+      if (selectedIdx === qData.answer) {
+        playSound('correct');
+        quizScore += 10;
+        updateStats(50, true);
+      } else {
+        playSound('wrong');
+        updateStats(0, false);
+      }
+
+      document.getElementById('quiz-explanation-text').textContent = qData.exp;
+      document.getElementById('quiz-explanation').classList.remove('hidden');
+    }
+
+    function nextQuizQuestion() {
+      playSound('click');
+      currentQuizIdx++;
+      if (currentQuizIdx < quizQuestions.length) {
+        renderQuizQuestion();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quiz-box').classList.add('hidden');
+      const resultView = document.getElementById('quiz-result-view');
+      resultView.classList.remove('hidden');
+
+      document.getElementById('quiz-final-score-text').textContent = `Skor Akhir Kuis Anda: ${quizScore} / ${quizQuestions.length * 10}`;
+      
+      let badge = "🥇 PPC Reman Expert";
+      if (quizScore < 60) badge = "📘 PPC Beginner - Perlu Review";
+      else if (quizScore < 80) badge = "🥈 PPC Practitioner";
+      
+      document.getElementById('quiz-badge-award').textContent = `Lencana Diperoleh: ${badge}`;
+    }
+
+    function restartQuiz() {
+      currentQuizIdx = 0;
+      quizScore = 0;
+      document.getElementById('quiz-box').classList.remove('hidden');
+      document.getElementById('quiz-result-view').classList.add('hidden');
+      renderQuizQuestion();
+    }
+
+    /* ==================== 3. GAME 7 WASTE & 3M LOGIC ==================== */
+    const sorterItems = [
+      { text: "Material komponen menumpuk berlebihan di samping meja rakit.", type: "7 Waste", ans: "INVENTORY", hint: "Penumpukan barang / stok berlebih." },
+      { text: "Operator harus berjalan 15 meter untuk mengambil dokumen perintah kerja.", type: "7 Waste", ans: "MOTION", hint: "Gerakan operator yang tidak perlu." },
+      { text: "Komponen hasil perakitan mengalami cacat dan harus diproses ulang (rework).", type: "7 Waste", ans: "DEFECT", hint: "Produk cacat atau perbaikan ulang." },
+      { text: "Operator duduk diam menunggu kepastian approval dari supervisor.", type: "7 Waste", ans: "WAITING", hint: "Menunggu material, mesin, atau keputusan." },
+      { text: "Proses pembersihan komponen dilakukan 4 kali padahal standar kualitas hanya butuh 1 kali.", type: "7 Waste", ans: "OVERPROCESSING", hint: "Langkah kerja berlebih tanpa tambah nilai." },
+      { text: "Jadwal pasokan material tidak merata; kadang terlambat, kadang terlalu banyak.", type: "3M", ans: "MURA", hint: "Ketidakmerataan / fluktuasi beban." },
+      { text: "Operator dipaksa bekerja terus-menerus melampaui batas kemampuan fisik.", type: "3M", ans: "MURI", hint: "Beban kerja berlebih (Overburden)." },
+      { text: "Aktivitas menunggu dan gerakan sia-sia di lapangan.", type: "3M", ans: "MUDA", hint: "Aktivitas pemborosan / tidak bernilai tambah." }
+    ];
+
+    let currentSorterIdx = 0;
+    let sorterScore = 0;
+
+    function renderSorterItem() {
+      if (currentSorterIdx >= sorterItems.length) {
+        currentSorterIdx = 0;
+      }
+      const item = sorterItems[currentSorterIdx];
+      document.getElementById('sorter-category-title').textContent = `Kategori: ${item.type}`;
+      document.getElementById('sorter-item-text').textContent = `"${item.text}"`;
+      document.getElementById('sorter-feedback').classList.add('hidden');
+
+      const btnGrid = document.getElementById('sorter-buttons-grid');
+      btnGrid.innerHTML = '';
+
+      let optionsList = [];
+      if (item.type === "7 Waste") {
+        optionsList = ["INVENTORY", "MOTION", "DEFECT", "WAITING", "OVERPROCESSING", "TRANSPORTATION", "OVERPRODUCTION"];
+      } else {
+        optionsList = ["MUDA", "MURA", "MURI"];
+      }
+
+      optionsList.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = "p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-400 rounded-xl font-bold text-xs text-slate-200 transition uppercase tracking-wider";
+        btn.textContent = cat;
+        btn.onclick = () => checkSorterAnswer(cat, item.ans, item.hint);
+        btnGrid.appendChild(btn);
+      });
+    }
+
+    function checkSorterAnswer(selected, correct, hint) {
+      const fb = document.getElementById('sorter-feedback');
+      fb.classList.remove('hidden', 'bg-emerald-900/80', 'text-emerald-300', 'bg-red-900/80', 'text-red-300');
+
+      if (selected === correct) {
+        playSound('correct');
+        sorterScore++;
+        updateStats(30, true);
+        fb.classList.add('bg-emerald-900/80', 'text-emerald-300');
+        fb.textContent = `✅ Tepat Sekali! (${correct}) - ${hint}`;
+      } else {
+        playSound('wrong');
+        updateStats(0, false);
+        fb.classList.add('bg-red-900/80', 'text-red-300');
+        fb.textContent = `❌ Kurang Tepat. Jawaban benar adalah: ${correct} (${hint})`;
+      }
+
+      document.getElementById('sorter-score').textContent = sorterScore;
+      setTimeout(() => {
+        currentSorterIdx++;
+        renderSorterItem();
+      }, 1800);
+    }
+
+    function resetSorterGame() {
+      currentSorterIdx = 0;
+      sorterScore = 0;
+      document.getElementById('sorter-score').textContent = 0;
+      renderSorterItem();
+    }
+
+    /* ==================== 4. KALKULATOR & MATH LOGIC ==================== */
+    function calculateVARatio() {
+      const va = parseFloat(document.getElementById('calc-va-in').value) || 0;
+      const nva = parseFloat(document.getElementById('calc-nva-in').value) || 0;
+      const total = va + nva;
+      
+      document.getElementById('calc-total-time').textContent = `${total} menit`;
+      if (total > 0) {
+        const ratio = (va / total) * 100;
+        document.getElementById('calc-va-ratio-out').textContent = `${ratio.toFixed(1)}%`;
+      } else {
+        document.getElementById('calc-va-ratio-out').textContent = `0%`;
+      }
+    }
+
+    function calculateUtilization() {
+      const act = parseFloat(document.getElementById('calc-act-out').value) || 0;
+      const max = parseFloat(document.getElementById('calc-cap-max').value) || 0;
+      
+      if (max > 0) {
+        const util = (act / max) * 100;
+        document.getElementById('calc-util-out').textContent = `${util.toFixed(1)}%`;
+
+        const statusEl = document.getElementById('calc-util-status');
+        if (util < 70) {
+          statusEl.textContent = "Belum Optimal (<70%)";
+          statusEl.className = "text-amber-400 font-semibold";
+        } else if (util <= 90) {
+          statusEl.textContent = "Efisien & Fleksibel (80-90%)";
+          statusEl.className = "text-emerald-400 font-semibold";
+        } else {
+          statusEl.textContent = "Risiko Overload (>95%)";
+          statusEl.className = "text-red-400 font-semibold";
+        }
+      }
+    }
+
+    // Math Challenge Generator
+    const mathChallenges = [
+      {
+        q: "Waktu VA = 40m, NVA = 60m. Berapakah nilai VA Ratio (%)?",
+        ans: 40.0
+      },
+      {
+        q: "Output Aktual = 750 unit, Kapasitas = 1000 unit. Berapakah Tingkat Utilisasi (%)?",
+        ans: 75.0
+      },
+      {
+        q: "Waktu Utama = 50m, Verifikasi = 10m, Waiting = 40m. Berapakah total waktu aktivitas (menit)?",
+        ans: 100.0
+      }
+    ];
+
+    let currentMathIdx = 0;
+
+    function renderMathChallenge() {
+      const ch = mathChallenges[currentMathIdx];
+      document.getElementById('math-question-title').textContent = `Soal #${currentMathIdx + 1}: ${ch.q}`;
+      document.getElementById('math-answer-input').value = '';
+      document.getElementById('math-feedback').classList.add('hidden');
+    }
+
+    function checkMathAnswer() {
+      const userAns = parseFloat(document.getElementById('math-answer-input').value);
+      const ch = mathChallenges[currentMathIdx];
+      const fb = document.getElementById('math-feedback');
+
+      fb.classList.remove('hidden', 'bg-emerald-900', 'text-emerald-300', 'bg-red-900', 'text-red-300');
+
+      if (Math.abs(userAns - ch.ans) < 0.1) {
+        playSound('correct');
+        updateStats(50, true);
+        fb.classList.add('bg-emerald-900', 'text-emerald-300');
+        fb.textContent = "🎉 Tepat Sekali! Perhitungan Anda Akurat.";
+        setTimeout(() => {
+          currentMathIdx = (currentMathIdx + 1) % mathChallenges.length;
+          renderMathChallenge();
+        }, 1500);
+      } else {
+        playSound('wrong');
+        updateStats(0, false);
+        fb.classList.add('bg-red-900', 'text-red-300');
+        fb.textContent = `❌ Kurang Tepat. Kunci Jawaban: ${ch.ans}`;
+      }
+    }
+
+    // Initialize App
+    window.onload = function() {
+      renderSimScenario();
+      renderQuizQuestion();
+      renderSorterItem();
+      renderMathChallenge();
+      calculateVARatio();
+      calculateUtilization();
+    };
+  </script>
+</body>
+</html>
